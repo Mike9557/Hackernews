@@ -1,0 +1,131 @@
+    import React, {Component} from 'react';
+    import './App.css';
+    /* path that leading to Api */
+    const DEFAULT_QUERY = 'redux';  /*default rearch */
+    const PATH_BASE = "https://hn.algolia.com/api/v1";
+    const PATH_SEARCH = '/search';
+    const PARAM_SEARCH = 'query=';
+
+class App extends Componen {
+   	constructor(props){
+	  super(props);
+      this.state = {
+         result:null; /*store the result which comes from the api*/
+         searchTerm: DEFAULT_QUERY,
+	};
+/*bind those functions to state, which means it is giving assess to the state, and the permission to change the state.(setState) */
+this.setSearchTopStories = this.setSearchTopStories.bind(this);
+this.onSearchChange = this,onSearchChange.bind(this);
+this.onSearchSubmit = this.onSearchSubmit.bind(this);
+this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
+this.onDimiss= this.onDismiss.bind(this);
+}
+onDismiss(id){
+      /* isNotId is a variable to store all the items that are not matching with ID */
+	   const isNotId = item => item.objectID !== id;
+      /* filter those items are not matching with ID, and store the new result into the variable "updatedHits */
+	   const updatedHits = this.state.result.hits.filter(isNotId);
+}
+onSearchChange(event){
+	  /* read new searchTerm input by event.target.value */
+	   this.setState{(searchTerm:event.target.value});
+}
+onSearchSubmit(){
+       /*get new result with new searchTerm */
+	   const {searchTerm} = this.state;
+      this.fetchSearchTopStories(searchTerm);
+}
+setSearchTopStories(result){
+	  /*update the result */
+     this.setState({result});
+}
+fetchSearchTopStories(searchTerm){
+	  /*fetch information from api process, first ask for json information, if the result is corrent, set up new result in the state, if there is an error, go to catch statement*/
+	  fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
+	  .then(response => response.json())
+     .then(result => this.setSearchTopStories(result))
+     .catch(error => error);
+}
+
+
+componentDidMount(){
+    /* life cycle for default searchTerm */
+	  const{searchTerm} = this.state;
+     this.fetchSearchTopStories(searchTerm);
+}
+onSearchSubmit(event){
+     /* search with updated searchTerm, if there is no result return, prevent the searchTerm to change into defult searchTerm which is "redux" */
+	  const {searchTerm} = this.state;
+     this.fetchSearchTopStories(searchTerm);
+	  event.preventDefault();
+}
+render(){
+    /* get searchTerm , result from the state */ 
+	 const{searchTerm,result} = this.state;
+    return(
+      <div className = "page">
+             <div className = "interactions">
+/* pass down searchTerm, onChange, onSubmit, Search to const/function Search */
+                  <Search value = {searchTerm} onChange = {this.onSearchChange} onSubmit = {this.onSearchSubmit}> Search </Search>
+             </div>
+/* if there is an result, pass the list{result.hits}, onDismiss to const table , otherwise null */
+             {result ?<Table list = {result.hits} onDismiss={this.onDismiss}/>:null};
+      </div> 
+    );
+}}
+const Search = ({
+	value,
+	onChange,
+	onSubmit,
+	children
+}) => 
+    <form onSubmit = {onSubmit}>  /* action of the button *, onSearchSubmit/
+	/* value  = searchTerm, onChange = this.onSearchChange */
+    <input type = "text" value ={value} onChange = {onChange} />  
+ /* {children} = Search */
+    <button type ="submit"> {children} </button>
+	 </form>
+
+const Table  = ({list, onDismiss}) => 
+/* list = result.hits, , onDismiss = onDismiss */
+    <div classname = "table">
+    {list.map(item=> 
+           <div className = "table">
+           {list.map(item=>  /* for each item in the list */
+               <div key = {item.objectID} className = "table-row"> 
+               <span style = {{width:'40%'}}> <a href = {item.url}> {item.title}</a></span>
+               <span style = {{width:'30%}}>{item.author}</span>
+               <span style = {{width:'10%'}}>{item.num_comments} </span>
+		<span style = {[width:'10%'}}>
+/* here is calling Button component not html tag button*/
+                        <Button onClick={()=> onDismiss(item.objectID)} className = "button-inline"> Dismiss < /Button> 
+		</span>
+               </div>
+)}
+	</div>
+
+class Button extends Component{
+ 	 render(){
+/* onDismiss (item.objectID), className = "button-inline", Dismiss*/
+           const{ onClick, className = '', children} = this.props;
+           
+           return (
+               <button onClick = {onClick} className = {className} type = "button"> {children}</button>);
+}
+}
+
+export default App;
+     
+
+
+
+
+
+
+
+        
+ 
+	
+
+
+
